@@ -20,6 +20,13 @@ def exportDB(args):
     clusters = libscowl.importFromDB(conn)
     libscowl.exportAsText(clusters, conn, sys.stdout, showClusters = args.show_clusters)
 
+def searchDB(args):
+    conn = libscowl.openDB(args.db)
+    kwargs = {k: v for k,v in args.__dict__.items() if k not in ('db', 'func')}
+    clusters = libscowl.searchDB(conn, **kwargs)
+    sys.stdout.write('\n')
+    libscowl.exportAsText(clusters, conn, sys.stdout, showExtraInfo = False, showClusters = kwargs.get('byCluster', False))
+
 def combinePOS(args):
     conn = libscowl.openDB(args.db)
     libscowl.combinePOS(conn)
@@ -117,6 +124,19 @@ p = subparsers.add_parser('export-db',
 p.set_defaults(func=exportDB)
 p.add_argument('--show-clusters', action='store_true', default=False)
 p.add_argument('db', nargs='?', default='scowl.db')
+
+
+p = subparsers.add_parser('search-db',
+                          aliases=['search'],
+                          allow_abbrev=False,
+                          help='search the database',
+                          argument_default=argparse.SUPPRESS)
+p.set_defaults(func=searchDB)
+p.add_argument('--db', metavar='FILE', default='scowl.db',
+               help="database file to use (default: scowl.db)")
+p.add_argument('--by-cluster', action='store_true', default=False, dest='byCluster')
+p.add_argument('words', nargs='+', metavar='WORD',
+               help="word to search for")
 
 
 p = subparsers.add_parser('combine-pos',

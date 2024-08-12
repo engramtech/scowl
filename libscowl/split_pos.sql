@@ -118,8 +118,5 @@ update scowl_data as w
 
 delete from _combined;
 
-delete from variant_info_mview;
-insert into variant_info_mview select * from variant_info;
-
 commit;
 

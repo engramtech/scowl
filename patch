@@ -226,16 +226,16 @@
 35: A B: through <aj_av>
 35: Av: thru <aj_av>
 ---
-35: A B: through <c>
-35: Av: thru <c>
+35: A B: through <pp>
+35: Av: thru <pp>
 +++
 35: A B: through <aj_av>
 35: AV B-: thru <aj_av>
 70: +: thru <aj_av>
 +++
-35: A B: through <c>
-35: AV B-: thru <c>
-70: +: thru <c>
+35: A B: through <pp>
+35: AV B-: thru <pp>
+70: +: thru <pp>
 +++
 50 US: thru <we>
 ===

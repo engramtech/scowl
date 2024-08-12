@@ -129,6 +129,26 @@ def posmap(base_pos, poses):
             new_poses = ['a0', 'a1', 'a2']
         else:
             new_poses = ['a0']
+    elif base_pos == 'pn':
+        if 'pnrs' in poses:
+            new_poses = ['pn0', 'pn1', 'pns', 'pnd', 'pnp', 'pnr0', 'pnrs']
+        elif 'pnr0' in poses:
+            new_poses = ['pn0', 'pn1', 'pns', 'pnd', 'pnp', 'pnr0']
+        elif 'pnp' in poses or 'pnd' in poses:
+            new_poses = ['pn0', 'pn1', 'pns', 'pnd', 'pnp']
+        elif 'pns' in poses:
+            new_poses = ['pn0', 'pn1', 'pns']
+        elif 'pn1' in poses:
+            new_poses = ['pn0', 'pn1']
+        else:
+            new_poses = ['pn0']
+    elif base_pos == 'd':
+        if 'ds' in poses:
+            new_poses = ['d', 'ds']
+        elif 'd1' in poses or 'd2' in poses:
+            new_poses = ['d', 'd1', 'd2']
+        else:
+            new_poses = ['d']
     elif base_pos == 'we':
         if 'wep' in poses:
             new_poses = ['we', 'wep']
@@ -193,6 +213,13 @@ def posesFromList(base_pos, words):
     elif base_pos == 'a' or base_pos == 'aj_av':
         if len(words) == 3:
             poses = ['a0', 'a1', 'a2']
+    elif base_pos == 'pn':
+        poses = ['pn0', 'pn1', 'pns', 'pnd', 'pnp', 'pnr0', 'pnrs'][0:len(words)]
+    elif base_pos == 'd':
+        if len(words) == 2:
+            poses = ['d', 'ds']
+        elif len(words) == 3:
+            poses = ['d', 'd1', 'd2']
     elif base_pos == 'we':
         if len(words) == 2:
             poses = ['we', 'wep']
@@ -480,21 +507,10 @@ class LineBase(SlotsDataClass):
             out.write(f' {{{self.grp.defn_note}}}')
         if self.grp.usage_note != '':
             out.write(f' ({self.grp.usage_note})')
-                
+
     @staticmethod
     def parse(line, g, entriesBySpellings):
-        line = line.strip()
-        m = re.fullmatch(r'(?P<level>[0-9]+) (?P<tags>[^:#]*):\s*' 
-                         r'(?: (?P<override>\+)\s*:\s* | (?P<spellings>[^:<>{}#]+) (\{(?P<num> [0-9])\}\s*|):\s* |)'
-                         r'(?P<lemma>[^:<>{}#()]+)'
-                         r'(?: <(?P<base_pos>[^/]*) (?:/(?P<pos_class>.+)|)>\s* |)'
-                         r'(?: {(?P<defn_note>.+)}\s* |)'
-                         r'(?: \((?P<usage_note>[^:#|]+)\)\s* |)'
-                         r'(?: : \s* (?P<words>[^#]+) |)'   
-                         r'(?: \# (?P<comments>.*) |)'
-                         ,       
-                         line,
-                         re.VERBOSE)
+        m = _matchLine(line)
         if m is None:
             return None
         if m['override'] is None:
@@ -539,6 +555,38 @@ class LineBase(SlotsDataClass):
         merge('usage_note', m['usage_note'])
         l.finishParse(g, lemma, m, entriesBySpellings)
         return l
+
+def _matchLine(line):
+    line = line.strip()
+    m = re.fullmatch(r'(?P<level>[0-9]+) (?P<tags>[^:#]*):\s*' 
+                     r'(?: (?P<override>\+)\s*:\s* | (?P<spellings>[^:<>{}#]+) (\{(?P<num> [0-9])\}\s*|):\s* |)'
+                     r'(?P<lemma>[^:<>{}#()]+)'
+                     r'(?: <(?P<base_pos>[^/]*) (?:/(?P<pos_class>.+)|)>\s* |)'
+                     r'(?: {(?P<defn_note>.+)}\s* |)'
+                     r'(?: \((?P<usage_note>[^:#|]+)\)\s* |)'
+                     r'(?: : \s* (?P<words>[^#]+) |)'   
+                     r'(?: \# (?P<comments>.*) |)'
+                     ,       
+                     line,
+                     re.VERBOSE)
+    return m
+
+def _splitWords(wordsStr, lemmaSpellingsKeys = ('_',)):
+    words = []
+    if wordsStr is None or wordsStr == '':
+        wordStrs = []
+    else:
+        wordStrs = wordsStr.split(',')
+    for w in wordStrs:
+        w = w.strip()
+        m_ = re.fullmatch('\((.+)\)', w)
+        if m_:
+            wes = [we for we in (WordEntry.parse(w_.strip(), lemmaSpellingsKeys) for w_ in m_[1].split('|')) if we is not None]
+        else:
+            we = WordEntry.parse(w)
+            wes = [] if we is None else [we]
+        words.append(wes)
+    return words
 
 class Line(LineBase):
     __slots__ = (
@@ -632,10 +680,6 @@ class Line(LineBase):
             le = LemmaEntry()
             le.spellings = spellings
             entriesBySpellings[spellingKey] = le
-        if m['words'] is None or m['words'] == '':
-            wordStrs = []
-        else:
-            wordStrs = m['words'].split(',')
         if lemma is None:
             words = [[]]
         else:
@@ -651,18 +695,10 @@ class Line(LineBase):
             lemmaSpellingsKeys = spellings.keys();
         else:
             lemmaSpellingsKeys = '_',
-        for w in wordStrs:
-            w = w.strip()
-            m_ = re.fullmatch('\((.+)\)', w)
-            if m_:
-                wes = [we for we in (WordEntry.parse(w_.strip(), lemmaSpellingsKeys) for w_ in m_[1].split('|')) if we is not None]
-            else:
-                we = WordEntry.parse(w)
-                wes = [] if we is None else [we]
-            words.append(wes)
+        words += _splitWords(m['words'], lemmaSpellingsKeys)
         poses = posesFromList(g.base_pos, words)
         if poses is None:
-            raise ValueError(f"could not map list of words of length {len(words)} with base pos of '{base_pos}'")
+            raise ValueError(f"could not map list of words of length {len(words)} with base pos of '{g.base_pos}'")
         assert(len(words) == len(poses))
         for pos, wes in zip(poses, words):
             if not wes:
@@ -805,7 +841,7 @@ class WordEntry(SlotsDataClass):
             return NotImplemented
         return self.spellings == other.spellings and self.word == other.word and self.entry_rank == other.entry_rank
 
-def createClusters(groups, clusterComments, conn = None):
+def _createClusters(groups, clusterComments, conn = None):
 
     if conn:
         expected_spellings = tuple(sp for sp, in conn.execute("select spelling from spellings where spelling != '_' order by order_num"))
@@ -900,14 +936,25 @@ def openDB(dbfile, create = False, copyFrom = None, transCopy = False):
     
     return conn
 
-def importFromDB(conn):
+def _importFromDB(conn, filterTable = None):
     words = {}
+
+    if filterTable:
+        groupIdFilter = f"(group_id in (select * from {filterTable}))"
+        lemmaIdFilter = f"(lemma_id in (select lemma_id from words where {groupIdFilter}))"
+        wordIdFilter = f"(word_id in (select word_id from words where {groupIdFilter}))"
+        headwordFilter = f"(headword in (select word from words where {groupIdFilter}))"
+    else:
+        groupIdFilter = 'true'
+        lemmaIdFilter = 'true'
+        wordIdFilter = 'true'
+        headwordFilter = 'true'
 
     cur = conn.cursor()
     #cur.row_factory = _dict_factory
 
     groups = {}
-    for r in cur.execute('select * from groups'):
+    for r in cur.execute(f"select * from groups where {groupIdFilter}"):
         grp = Group()
         grp.base_pos = r['base_pos']
         grp.defn_note = r['defn_note']
@@ -921,13 +968,13 @@ def importFromDB(conn):
         grp.comments = []
         groups[r['group_id']] = grp
 
-    for r in cur.execute('select * from group_comments'):
+    for r in cur.execute(f"select * from group_comments where {groupIdFilter}"):
         groups[r['group_id']].comments.append(GroupComment(r['word'], r['other_words'], r['comment']))
 
     wordsById = {}
     lemmasById = {}
 
-    for r in cur.execute("select * from lemma_variant_info"):
+    for r in cur.execute(f"select * from lemma_variant_info where {lemmaIdFilter}"):
         lemma_id = r['lemma_id']
         le = lemmasById.get(lemma_id)
         if le is None:
@@ -935,7 +982,7 @@ def importFromDB(conn):
             le.spellings = Spellings()
         le.spellings.add(r['spelling'],r['variant_level'])
 
-    for r in cur.execute("select * from derived_variant_info"):
+    for r in cur.execute(f"select * from derived_variant_info where {wordIdFilter}"):
         word_id = r['word_id']
         we = wordsById.get(word_id)
         if we is None:
@@ -943,7 +990,7 @@ def importFromDB(conn):
             we.spellings = Spellings()
         we.spellings.add(r['spelling'],r['variant_level'])
 
-    for r in cur.execute("select * from lemma_comments order by lemma_id, order_num"):
+    for r in cur.execute(f"select * from lemma_comments where {lemmaIdFilter} order by lemma_id, order_num"):
         lemma_id = r['lemma_id']
         le = lemmasById.get(lemma_id)
         if le is None:
@@ -951,11 +998,12 @@ def importFromDB(conn):
             le.spellings = Spellings()
         le.comments.append(r['comment'])
 
-    duplicates = set(word for word, in cur.execute("select word from duplicate_derived"))
-
     lemma_id = -1
     le = None
-    for r in cur.execute('select * from words order by lemma_id'):
+    for r in cur.execute("select *, dup.word is not null as dup "
+                         "from words left join duplicate_derived dup using (group_id, word) "
+                         f"where {groupIdFilter} "
+                         "order by lemma_id"):
         grp = groups[r['group_id']]
         if r['lemma_id'] != lemma_id:
             lemma_id = r['lemma_id']
@@ -971,13 +1019,16 @@ def importFromDB(conn):
             we = WordEntry()
         we.word = r['word']
         we.entry_rank = r['entry_rank']
-        we.duplicate = we.word in duplicates
+        we.duplicate = bool(r['dup'])
         le.words.setdefault(r['pos'], []).append(we)
         if r['word_id'] == lemma_id:
             le.lemma = r['word']
 
     linesByGroup = defaultdict(lambda: defaultdict(set))
-    for r in cur.execute('select group_id, level, category, region, pos, group_concat(tag) as tags from scowl_data group by group_id, level, category, region, pos'):
+    for r in cur.execute("select group_id, level, category, region, pos, group_concat(tag) as tags "
+                         "from scowl_data "
+                         f"where {groupIdFilter} "
+                         "group by group_id, level, category, region, pos"):
         lines = linesByGroup[r['group_id']]
         level = r['level']
         category = r['category']
@@ -994,6 +1045,7 @@ def importFromDB(conn):
     overrideByGroup = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for r in cur.execute("select group_id, level, category, region, lemma, word, group_concat(tag) as tags "
                          "from scowl_override join entries using (word_id) "
+                         f"where {wordIdFilter} " 
                          "group by group_id, level, category, region, lemma, word"):
         override = overrideByGroup[r['group_id']]
         level = r['level']
@@ -1010,7 +1062,7 @@ def importFromDB(conn):
                 grp.override[lemma] = Override(grp, level, category, region, tags, lemma, sorted(w for w in words if w != lemma))
 
     clusterComments = {}
-    for r in cur.execute("select * from cluster_comments"):
+    for r in cur.execute(f"select * from cluster_comments where {headwordFilter}"):
         clusterComments[clusterKey(r['headword'])] = ClusterComment(r['headword'], r['other_words'], r['comment'])
 
     for k in list(clusterComments.keys()):
@@ -1021,8 +1073,25 @@ def importFromDB(conn):
             other.other_words += f' {c.word} {c.other_words}'
             del clusterComments[k]
 
-    return createClusters(groups.values(), clusterComments, conn)
+    return (groups.values(), clusterComments)
 
+def importFromDB(conn, filterTable = None):
+    groups, clusterComments = _importFromDB(conn, filterTable)
+    return _createClusters(groups, clusterComments, conn)
+
+def searchDB(conn, words, byCluster):
+    conn.execute("create temp table group_id_filter (group_id integer primary key)")
+    for w in words:
+        conn.execute("insert or ignore into group_id_filter select group_id from words where word = ?", (w,))
+    conn.execute("analyze group_id_filter")
+    if byCluster:
+        conn.execute("insert or ignore into group_id_filter "
+                     "select b.group_id from group_id_filter join cluster_map a using (group_id) join cluster_map b using (cluster_id)")
+        conn.execute("analyze group_id_filter")
+    clusters = importFromDB(conn, filterTable = "group_id_filter")
+    conn.execute("drop table group_id_filter")
+    return clusters
+    
 def exportToDB(clusters, conn):
     group_id = 1
     word_id = 1
@@ -1098,7 +1167,7 @@ def exportToDB(clusters, conn):
 
     conn.executescript((_dir / 'post.sql').read_text())
 
-def exportAsText(clusters, conn = None, out = None, *, trimSpellings = True, showClusters = False):
+def exportAsText(clusters, conn = None, out = None, *, trimSpellings = True, showClusters = False, showExtraInfo = True):
     if out is None:
         out = sys.stdout
 
@@ -1107,7 +1176,7 @@ def exportAsText(clusters, conn = None, out = None, *, trimSpellings = True, sho
         for var, val in conn.execute('select var, val from _variables'):
             setattr(dbVars, var, val)
 
-    if hasattr(dbVars, 'filter_type'):
+    if hasattr(dbVars, 'filter_type') and showExtraInfo:
         out.write("#: FILTERED VIEW OF SCOWL DATA:\n")
         out.write(f"#:   {dbVars.filter_type}\n")
         out.write(f"#:   {dbVars.filter_where_clause}\n")
@@ -1146,7 +1215,7 @@ def exportAsText(clusters, conn = None, out = None, *, trimSpellings = True, sho
         if showClusters:
             out.write('\n')
 
-    if conn:
+    if conn and showExtraInfo:
         out.write('#: Part of Speech Codes:\n')
         for pos, descr, extra_info in conn.execute("select base_pos, descr, extra_info from base_poses where base_pos != '' order by order_num"):
             out.write(f"#:   {pos}: {descr}\n")
@@ -1181,13 +1250,7 @@ def exportAsText(clusters, conn = None, out = None, *, trimSpellings = True, sho
         for tag, in conn.execute("select tag from tags where tag != '' order by tag"):
             out.write(f'#:   {tag}\n')
 
-def importText(f = None):
-    if f is None:
-        f = sys.stdin
-
-    groups = []
-    clusterComments = {}
-    
+def _mergeText(f, groups, clusterComments):
     grp = None
     lines = defaultdict(set)
     override = []
@@ -1247,13 +1310,47 @@ def importText(f = None):
             key = (l.level, l.category, l.region, frozenset(l.tags))
             lines[key].update(l.poses)
 
-    return createClusters(groups, clusterComments)
+def importText(f = None):
+    groups = []
+    clusterComments = {}
+    _mergeText(sys.stdin if f is None else f, groups, clusterComments)
+    return _createClusters(groups, clusterComments)
+
+def roughParse(f = None):
+    if f is None:
+        f = sys.stdin
+
+    for line in f:
+        line = line.strip()
+        if line == '' or line.startswith('#'):
+            continue
+
+        m = _matchLine(line)
+        if m is None:
+            raise ValueError(f"bad line: {line}")
+        lemma = m['lemma'].strip()
+        if lemma != '-':
+            (_, lemma, lemma_rank) = parseWordPart(lemma)
+            base_pos = m['base_pos']
+            yield (base_pos, lemma)
+
+        try:
+            words = _splitWords(m['words'])
+        except:
+            raise ValueError(f"bad line: {line}")
+
+        for ws in words:
+            for we in ws:
+                yield (base_pos, we.word)
+
 
 def combinePOS(conn):
     conn.executescript((_dir / 'combine_pos.sql').read_text())
+    conn.executescript((_dir / 'post.sql').read_text())
 
 def splitPOS(conn):
     conn.executescript((_dir / 'split_pos.sql').read_text())
+    conn.executescript((_dir / 'post.sql').read_text())
     
 class SetFilter(set):
     def __init__(self, *members, noDefault = False):

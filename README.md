@@ -17,9 +17,6 @@ SCOWLv2 instead combines all that information into a single text file and
 SQLite3 database.  In order to keep the file size manageable and to avoid noise
 entries the minimum SCOWL size is now 35 and the 95 size is not included.
 
-The file includes part-of-speech (POS) and spelling variant information in one
-place.
-
 Unlike SCOWLv1, SCOWLv2 includes the proper spelling of abbreviations that
 included the trailing dot.  It also includes words that were excluded from
 SCOWLv1 such as hyphenated and open (i.e. with space) compound words, and
@@ -130,13 +127,24 @@ New columns may be added, but not in a way that will break existing queries.
 If is is necessary to break existing queries a new view will be provided.
 
 
+Searching the Database
+----------------------
+
+To search for an entry in scowl use:
+
+    ./scowl search [--db scowl.db] [--by-cluster] WORD [WORD ...]
+
+where WORD is one or more words to search.  By default search will return the
+groups with any of the supplied words.  To instead return the entire cluster
+use `--by-cluster`.  Note that the search is case sensitive.
+
+
 Filtering the Database
 ----------------------
 
-In addition to creating wordlists you can also filter the database to only
-show the information you are interested in and avoid noise.  This works by
-creating a new database file that then needs to be reexported with
-`./scowl export-db`.
+You can also filter the database to only show the information you are
+interested in and avoid noise.  This works by creating a new database file
+that then needs to be reexported with `./scowl export-db`.
 
 For example, to filter the database to only include sizes 70 or lower:
 
@@ -277,22 +285,25 @@ The LEMMA is the base form of the word.
 The part of speeches (POS) or as follows:
 
     n: noun
-    n_v: noun and verb
-    m: noun/verb
     v: verb
+    m: noun/verb
     aj: adjective
     av: adverb
-    aj_av: adjective and adverb
     a: adjective/adverb
-    c: conjunction/preposition
+    pn: pronoun
+    c: conjunction
+    pp: preposition
+    d: determiner
     i: interjection
-    p: pronoun
+    abbr: abbreviation
     s: contraction
     pre: prefix
+    suf: suffix
     wp: multi-word part
     we: multi-word ending
-    abbr: abbreviation
-    x: non word
+    x: non word (for example a roman numeral)
+    n_v: noun and verb
+    aj_av: adjective and adverb
 
 The `m` and `a` are special POS'es that should not used for new entries.  The
 `m` is assigned when all the word forms for a verb where found in a word
@@ -320,51 +331,75 @@ dash (`-`) is used if a particular word form is missing.  The order is one of:
     m: m0
     m: m0 vd [vn] vg ms
 
+    pn: p0
+    pn: p0 pn1 pns pnd pnp pnr0 pnrs
+
+    d: d
+    d: d ds
+    d: d d1 d2
+
     a*: a*0
     a*: a*0 a*1 a*2
 
-    we: we [wep]
+    we: we [wes] [wep]
+    we: we wes wep weps
 
-entries marked by square brackets are optional and can be excluded without the
-use of a dash placeholder.
+Entries marked by square brackets are optional and can be excluded without the
+use of a dash placeholder.  Trailing entries for pronouns (pn) can also be
+excluded without the use of a dash placeholder.
 
 The derived forms are as follows:
 
-    ?: unknown
-    c: conjunction/preposition
-    i: interjection
-    p: pronoun
-    s: contraction
-    n0: noun: singular
+    n0: noun
     ns: noun: plural
+    nss: noun: plural of plural
     np: noun: possessive
     nsp: noun: plural possessive
-    v0: verb: root form
+    nssp: noun: plural of plural possessive
+    v0: verb
     vd: verb: past tense (-ed)
-    vd2: verb: past tense plural
-    vn: verb: past participle
+    vd2: verb: past tense plural (were)
+    vn: verb: past participle (-en)
     vg: verb: present participle (-ing)
     vs: verb: present tense (-s)
-    vs2: verb: present tense second-person singular
-    vs3: verb: present tense third-person singular
-    vs4: verb: present tense plural
-    m0: noun/verb: root form
+    vs2: verb: present tense second-person singular (are)
+    vs3: verb: present tense third-person singular (is)
+    vs4: verb: present tense plural (are)
+    m0: noun/verb
     ms: noun/verb: (-s)
-    aj0: adjective: root form
+    aj0: adjective
     aj1: adjective: comparative (-er)
     aj2: adjective: superlative (-est)
-    av0: adverb: root form
+    av0: adverb
     av1: adverb: comparative (-er)
     av2: adverb: superlative (-est)
-    a0: adjective/adverb: root form
+    a0: adjective/adverb
     a1: adjective/adverb: comparative (-er)
     a2: adjective/adverb: superlative (-est)
-    pre: prefix
-    wp: multi-word part
-    we: multi-word ending: root form
-    wep: multi-word ending: possessive
+    pn0: pronoun
+    pn1: pronoun: objective (you/him/her/...)
+    pns: pronoun: plural
+    pnd: pronoun: determiner (your/his/her/...)
+    pnp: pronoun: possessive (yours/his/hers/...)
+    pnr0: pronoun: reflexive singular (yourself/...)
+    pnrs: pronoun: reflexive plural (yourselves/...)
+    c: conjunction
+    pp: preposition
+    d: determiner
+    ds: determiner: plural
+    d1: determiner: comparative
+    d2: determiner: superlative
+    i: interjection
     abbr: abbreviation
-    x: non word: for example a roman numeral
+    s: contraction
+    pre: prefix
+    suf: suffix
+    wp: multi-word part
+    we: multi-word ending
+    wes: multi-word ending: plural
+    wep: multi-word ending: possessive
+    weps: multi-word ending: plural possessive
+    x: non word
 
 The POS-CLASS is a string to qualify the POS, for example `place`.  The
 current tags are experimental and at the moment can't be used to reliably

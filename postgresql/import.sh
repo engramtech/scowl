@@ -2,11 +2,17 @@
 
 set -e
 
+if [ $# -lt 2 -o \( $# -eq 3 -a "$3" != drop \) -o $# -gt 3 ]
+then
+    echo 'usage: $0 <database> <schema> [drop]'
+    exit 1
+fi
+
 SQLITE3=${SQLITE3:-sqlite3}
 SQLITE_DB="../scowl.db"
 PSQL="psql"
-PGDATABASE="scowl"
-SCHEMA="v2"
+PGDATABASE="$1"
+SCHEMA="$2"
 
 (
   for tbl in `cat tables`
@@ -21,11 +27,12 @@ select * from $tbl;
 EOF
       cat <<EOF
 \.
+analyze $tbl;
 EOF
   done
 ) > data.sql
 
-if [ "$1" = drop ]; then
+if [ "$3" = drop ]; then
     DROP_SCHEMA="drop schema if exists $SCHEMA cascade;"
 fi
 
@@ -38,9 +45,9 @@ set search_path=$SCHEMA;
 \i schema.sql
 \i data.sql
 commit;
-analyze;
 \i views.sql
-alter view variant_info rename to variant_info_mview;
+alter view cluster_map_view rename to cluster_map;
+alter view variant_info_view rename to variant_info;
 \i scowl.sql
-alter view variant_info_mview rename to variant_info;
+alter view duplicate_derived_view rename to duplicate_derived;
 EOF

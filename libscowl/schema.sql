@@ -66,7 +66,7 @@ create table groups (
 
 create table words (
   word_id integer primary key,
-  group_id integer not null references groups(group_id),
+  group_id integer not null references groups(group_id) on delete cascade,
   lemma_id integer not null references words(word_id),
   pos text not null references poses(pos),
   word text not null,
@@ -97,7 +97,7 @@ create table scowl_data (
   category text not null default '',
   region text not null default '' references regions(region),
   tag text not null default '',
-  group_id integer not null references groups(group_id),
+  group_id integer not null references groups(group_id) on delete cascade,
   pos text not null references poses(pos),
   --foreign key (group_id, pos) references words(group_id, pos),
   primary key (level, region, category, tag, group_id, pos)
@@ -165,9 +165,21 @@ create table tags (
 -- materialized views
 --
 -- populate by using corresponding view that doesn't end in '_mview'
--- 
+--
 
-create table variant_info_mview (
+create table cluster_map (
+  group_id integer not null primary key,
+  cluster_id integer not null
+);
+create index cluster_map_idx on cluster_map(cluster_id);
+
+create table duplicate_derived (
+  group_id integer not null,
+  word text not null,
+  primary key (group_id, word)
+) without rowid;
+
+create table variant_info (
   word_id integer not null,
   spelling text not null,
   variant_level smallint not null,

@@ -16,7 +16,7 @@ select group_id, lemma_id, word_id, base_pos,
        false as override
  from (scowl_data
        join entries using (group_id, pos)) as w
- left join variant_info as v using (word_id)
+ left join variant_info_view as v using (word_id)
  left join group_comments as gc using (group_id)
  left join lemma_comments as lc using (lemma_id)
 union all
@@ -120,8 +120,5 @@ update groups
 
 insert into _combined
 select distinct a_group_id, b_group_id from _match;
-
-delete from variant_info_mview;
-insert into variant_info_mview select * from variant_info;
 
 commit;

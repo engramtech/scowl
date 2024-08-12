@@ -10,17 +10,13 @@ select a.word_id, a.group_id, a.lemma_id, b.word as lemma, b.pos as lemma_pos, b
   from words a left join words b on (a.lemma_id = b.word_id) left join groups g on a.group_id = g.group_id;
 select * from entries limit 0;
 
-create view duplicate_derived as
-select word
- from (select (select max(cluster_id) from clusters where cluster_id <= group_id) as cluster_id, word
-         from words
-         join (select word_id as lemma_id, word as lemma from words) as lemmas using (lemma_id)
-        where word_id != lemma_id) as q
- group by word
- having count (distinct cluster_id) > 1
+create view cluster_map_view as
+select group_id, (select max(cluster_id) from clusters where cluster_id <= group_id) as cluster_id
+  from groups
 ;
+select * from cluster_map_view limit 0;
 
-create view variant_info as
+create view variant_info_view as
 select word_id,
        spelling,
        case when a.variant_level >= coalesce(b.variant_level,-1) then a.variant_level else b.variant_level end as variant_level,
@@ -41,7 +37,7 @@ select word_id,
   join words using (word_id)
   where lemma_id not in (select lemma_id from lemma_variant_info)
 ;
-select * from variant_info limit 0;
+select * from variant_info_view limit 0;
 
 create view duplicate_lemma_check as
 select lemma, base_pos, pos_class, defn_note, usage_note from lemmas group by lemma, base_pos, pos_class, defn_note, usage_note having count(distinct group_id) > 1;
