@@ -15,7 +15,7 @@ create table poses (
   pos pos not null primary key,
   base_pos base_pos not null,
   pos_category pos_category not null,
-  name text,
+  descr text,
   note text,
   extra_info text
 );

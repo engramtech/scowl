@@ -12,7 +12,7 @@ def populateConstDataFromDB(conn):
             name = r['pos'],
             base_pos = r['base_pos'],
             category = r['pos_category'],
-            descr = r['name'],
+            descr = r['descr'],
             note = r['note'],
             extra_info = r['extra_info'],
         )
