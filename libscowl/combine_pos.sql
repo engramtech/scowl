@@ -8,7 +8,7 @@
 begin;
 
 create temp view _scowl as
-select group_id, lemma_id, word_id, base_pos, 
+select group_id, lemma_id, word_id, base_pos,
        level as sk1, category as sk2, region as sk3, tag as sk4, -- sk = scowl key
        coalesce(spelling,'') as vk1, coalesce(lemma_variant_level,-1) as vk2, coalesce(derived_variant_level,-1) as vk3, -- vk = variant key
        lemma, w.word, pos, lemma_rank as wk1, pos_class as wk2, defn_note as wk3, usage_note as wk4, coalesce(entry_rank,'') as wk5, -- wk = word key
@@ -37,7 +37,7 @@ select a.group_id as a_group_id, b.group_id as b_group_id,
        a.pos as a_pos, b.pos as b_pos,
        word, lemma, override,
        sk1, sk2, sk3, sk4, vk1, vk2, vk3
-  from _scowl a join _scowl b using (sk1, sk2, sk3, sk4, lemma, word, wk1, wk3, wk4, wk4, wk5, vk1, vk2, vk3, ck1, ck2, ck3, override)
+  from _scowl a join _scowl b using (sk1, sk2, sk3, sk4, lemma, word, wk1, wk2, wk3, wk4, wk4, wk5, vk1, vk2, vk3, ck1, ck2, ck3, override)
   where (a.pos = 'aj0' and b.pos = 'av0')
      or (a.pos = 'aj1' and b.pos = 'av1')
      or (a.pos = 'aj2' and b.pos = 'av2')

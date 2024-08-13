@@ -13,8 +13,6 @@ import re
 from ._common import *
 from ._constdata import *
 
-LEMMA_POSES = frozenset(i.lemma_pos for i in basePosInfo.values());
-
 def _warn(msg):
     sys.stderr.write(f'warning: {msg}\n')
 
@@ -87,6 +85,17 @@ def posmap(base_pos, poses):
             new_poses = ['n0', 'ns']
         else:
             new_poses = ['n0']
+    elif base_pos == 'pl':
+        if 'nssp' in poses:
+            new_poses = ['ns', 'nss', 'nsp', 'nssp']
+        elif 'nsp' in poses and 'nss' in poses:
+            new_poses = ['ns', 'nss', 'nsp']
+        elif 'nsp' in poses:
+            new_poses = ['ns', 'nsp']
+        elif 'nss' in poses:
+            new_poses = ['ns', 'nss']
+        else:
+            new_poses = ['ns']
     elif base_pos == 'v':
         if not {'vd2', 'vs2', 'vs3', 'vs4'}.isdisjoint(poses):
             new_poses = ['v0', 'vd', 'vd2', 'vn', 'vg', 'vs', 'vs2', 'vs3', 'vs4']
@@ -177,6 +186,16 @@ def posesFromList(base_pos, words):
                 poses = ['n0', 'np']
             else:
                 poses = ['n0', 'ns']
+    elif base_pos == 'n':
+        if len(words) == 4:
+            poses = ['ns', 'nss', 'nsp', 'nssp']
+        elif len(words) == 3:
+            poses = ['ns', 'nss', 'nsp']
+        elif len(words) == 2:
+            if words[1] and words[1][0].word.endswith("'s"):
+                poses = ['ns', 'nsp']
+            else:
+                poses = ['ns', 'nss']
     elif base_pos == 'v':
         if len(words) == 9:
             poses = ['v0', 'vd', 'vd2', 'vn', 'vg', 'vs', 'vs2', 'vs3', 'vs4']
@@ -601,7 +620,7 @@ class Line(LineBase):
             self.poses = poses
 
     def sortKey(self):
-        return (self.level, self.category, self.region, not bool(self.poses & LEMMA_POSES), self.tags)
+        return (self.level, self.category, self.region, basePosInfo[self.grp.base_pos].lemma_pos not in self.poses, self.tags)
 
     def lemmaIncluded(self):
         return basePosInfo[self.grp.base_pos].lemma_pos in self.poses
@@ -1316,6 +1335,8 @@ def importText(f = None):
     _mergeText(sys.stdin if f is None else f, groups, clusterComments)
     return _createClusters(groups, clusterComments)
 
+BasicInfo = namedtuple('BasicInfo', 'base_pos pos_class word is_lemma')
+
 def roughParse(f = None):
     if f is None:
         f = sys.stdin
@@ -1332,7 +1353,8 @@ def roughParse(f = None):
         if lemma != '-':
             (_, lemma, lemma_rank) = parseWordPart(lemma)
             base_pos = m['base_pos']
-            yield (base_pos, lemma)
+            pos_class = m['pos_class']
+            yield BasicInfo(base_pos, pos_class, lemma, True)
 
         try:
             words = _splitWords(m['words'])
@@ -1341,7 +1363,7 @@ def roughParse(f = None):
 
         for ws in words:
             for we in ws:
-                yield (base_pos, we.word)
+                yield BasicInfo(base_pos, pos_class, we.word, False)
 
 
 def combinePOS(conn):
