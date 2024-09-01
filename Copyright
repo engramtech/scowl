@@ -12,8 +12,22 @@ as any of the copyrights mentioned below:
   about the suitability of this array for any purpose. It is provided
   "as is" without express or implied warranty.
 
-SCOWLv2 uses the same sources as the original SCOWL (SCOWLv1).  The copyright
-and sources for SCOWLv1 are below. 
+SCOWLv2 uses the same sources as the original SCOWL (SCOWLv1) with some
+additional information from WordNet and the Corpus of Contemporary American
+English (COCA).
+
+Both WordNet and COCA where used to determine when a possessive form of a noun
+is applicable.
+
+Data from COCA was also used to help determine the part-of-speeches of certain
+words.
+
+All data from COCA comes from 3-grams data that is not freely available;
+however, the usage is within the rights given by the NDA that was signed when
+purchasing the data.  More information on COCA is available at
+https://www.english-corpora.org/coca/.
+
+The copyright for WordNet and all the sources for SCOWLv1 are below.
 
 [FIXME: Condense the remeinder of the file and rewrite or remove all references
 to components of SCOWLv1].

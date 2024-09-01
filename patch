@@ -32,8 +32,8 @@
 ---
 50: applique <v>: (appliqued | -: appliqueed-), appliqueing, appliques # need-accent # fixme: appliqueed: check if variant
 ---
-50: appliqué <n>: appliqués, appliqué's # accented
-50: _~: applique <n>: appliques, applique's # need-accent
+50: appliqué <n>: appliqués # accented
+50: _~: applique <n>: appliques # need-accent
 ---
 70 [5desk]: appliquéd # accented
 70 [5desk]: _~: appliqued # need-accent
@@ -43,23 +43,23 @@
 50: appliqué <v>: appliquéd, appliquéing, appliqués
 50: _V: applique <v>: (appliqued | -: appliqueed), appliqueing, appliques
 +++
-50: appliqué <n>: appliqués, appliqué's # accented
-50: _V: applique <n>: appliques, applique's # need-accent
+50: appliqué <n>: appliqués # accented
+50: _V: applique <n>: appliques # need-accent
 ===
 
 ---
 35: fete <v>: feted, feting, fetes
 ---
-35: fête <n>: fêtes, fête's # accented
-35: _~: fete <n>: fetes, fete's # need-accent
+35: fête <n>: fêtes # accented
+35: _~: fete <n>: fetes # need-accent
 +++
-35: A B=: fete <n_v>: feted, feting, fetes, fete's
-35: Av B: fête <n_v>: fêted, fêting, fêtes, fête's
+35: A B=: fete <n_v>: feted, feting, fetes
+35: Av B: fête <n_v>: fêted, fêting, fêtes
 ===
 
 ---
 35: sauté <n_v>: sautéed, sautéing, sautés # accented
-35: _~: saute <n_v>: (sauteed | ~: sauted†), (sauteing | -: sauting-†), sautes, saute's # need-accent
+35: _~: saute <n_v>: (sauteed | ~: sauted†), (sauteing | -: sauting-†), sautes # need-accent
 ---
 35: sauté <aj> # accented
 35: _~: saute <aj> # need-accent
@@ -67,7 +67,7 @@
 40: sauteed <aj>
 +++
 35: sauté <n_v>: (sautéed | ~: sautéd), sautéing, sautés
-35: _V: saute <n_v>: (sauteed | ~: sauted), sauteing, sautes, saute's
+35: _V: saute <n_v>: (sauteed | ~: sauted), sauteing, sautes
 +++
 35: sauté <aj>
 35: _V: saute <aj>
@@ -91,14 +91,14 @@
 ---
 35: souffle <a>
 ---
-35: soufflé <n>: soufflés, soufflé's # accented
-35: _~: souffle <n>: souffles, souffle's # need-accent
+35: soufflé <n>: soufflés # accented
+35: _~: souffle <n>: souffles # need-accent
 +++
 35: soufflé <aj>
 35: _V: souffle <aj>
 +++
-35: soufflé <n>: soufflés, soufflé's
-35: _V: souffle <n>: souffles, souffle's
+35: soufflé <n>: soufflés
+35: _V: souffle <n>: souffles
 ===
 
 ---
@@ -173,10 +173,10 @@
 ===
 
 ---
-35: wake <n_v>: (woke | ?: waked), (waked | ~: woke | ~: woken), waking, wakes, wake's
+35: wake <n_v>: (woke | ?: waked), (waked | ~: woke | ~: woken), waking, wakes
 50 [+]: - <n_v>: (woke | ?: waked), (waked | ~: woke | ~: woken), -, -
 +++
-35: wake <n_v>: (A B: woke | AV B@: waked), (A B: woken | A. B@: waked | AV: woke), waking, wakes, wake's
+35: wake <n_v>: (A B: woke | AV B@: waked), (A B: woken | A. B@: waked | AV: woke), waking, wakes
 +++
 50 [+]: woke <aj>: woker, wokest
 ===
@@ -189,10 +189,10 @@
 
 ---
 35 [ukfreq]: persona <n>
-40: persona <n>: (personae | ~: personas)
+40: persona <n>: (personae | ~: personas), persona's, (personae's | ~: personas')
 +++
 35 [ukfreq]: persona <n>
-40: persona <n>: (personae | .: personas)
+40: persona <n>: (personae | .: personas), persona's, (personae's | .: personas')
 ===
 
 ---
@@ -323,10 +323,10 @@
 ===
 
 ---
-35: bacteria <n>
+35: bacteria <n>: bacteria's
 80: - <n>: bacterias~
 +++
-35: bacteria <n>
+35: bacteria <n>: bacteria's
 80: - <n>: bacterias!
 ===
 
@@ -419,11 +419,11 @@
 ===
 
 ---
-50: intaglio <n>: (intaglioes | intaglios | ~: intagli), intaglio's, (intaglioes' | intaglios' | ~: intagli's) #! unmarked variants: intaglioes, intaglios, intaglioes', intaglios'
+50: intaglio <n>: (intaglioes | intaglios | ~: intagli)
 ---
-70 [5desk] [moby]: intaglio- <v>: intaglioed, intaglioing, (intaglioes | intaglios) #! unmarked variants: intaglioes, intaglios
+70 [5desk] [moby]: intaglio- <v>: intaglioed, intaglioing, (intaglioes | intaglios)
 +++
-50: intaglio <n>: (intaglios | ~: intagli), intaglio's, (intaglios' | ~: intagli's)
+50: intaglio <n>: (intaglios | ~: intagli)
 +++
 70 [5desk] [moby]: intaglio- <v>: intaglioed, intaglioing, intaglioes
 ===
