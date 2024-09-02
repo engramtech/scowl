@@ -23,7 +23,7 @@ _accented   = "ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãä�
 _deaccented = "AAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuy"
 _orderAlpha = "aáàâåäãAÁÀÂÅÄÃæÆbBcçCÇdDðÐeéèêëEÉÈÊËfFgGhHiíìîïIÍÌÎÏjJkKlLmMnñNÑoóòôöõøOÓÒÔÖÕØpPqQrRsSßtTuúùûüUÚÙÛÜvVwWxXyýYÝzZþÞ"
 _order = '0123456789' + _orderAlpha + ".&/'- "
-_wordRegex = f"[{_orderAlpha}0-9.&'/](?:[{_orderAlpha}0-9.&'/ -]*[{_orderAlpha}0-9.&'/]|)"
+_wordRegex = rf"[{_orderAlpha}0-9.&'/](?:[{_orderAlpha}0-9.&'/ -]*[{_orderAlpha}0-9.&'/]|)"
 
 # note: any character not in _order is not allowed to be part of a word
 
@@ -64,7 +64,7 @@ def validateWord(w):
     if not m:
         raise ValueError(f"invalid word: {w}")
 
-wordPartRegex = re.compile(f'(\+?)({_wordRegex})([*@~!-]?)†?')
+wordPartRegex = re.compile(rf'(\+?)({_wordRegex})([*@~!-]?)†?')
 
 def parseWordPart(w):
     m = wordPartRegex.fullmatch(w)
@@ -598,7 +598,7 @@ def _splitWords(wordsStr, lemmaSpellingsKeys = ('_',)):
         wordStrs = wordsStr.split(',')
     for w in wordStrs:
         w = w.strip()
-        m_ = re.fullmatch('\((.+)\)', w)
+        m_ = re.fullmatch(r'\((.+)\)', w)
         if m_:
             wes = [we for we in (WordEntry.parse(w_.strip(), lemmaSpellingsKeys) for w_ in m_[1].split('|')) if we is not None]
         else:
@@ -1507,7 +1507,7 @@ def wordFilterRegEx(
                            '-' if hyphen else ''])
         charSetMiddle = ''.join(["'" if apostrophe == 'middle' else '',
                                  charSet])
-        return ''.join([f"([{charSet}](?:[{charSetMiddle}]*[{charSet}]|))",
+        return ''.join([rf"([{charSet}](?:[{charSetMiddle}]*[{charSet}]|))",
                         r'\.?' if dot == 'strip' else ''])
 
 def getWords(conn, *, deaccent = False, useWordFilter = True, nosuggest = None, nosuggestSuffix = '/!', **args):
